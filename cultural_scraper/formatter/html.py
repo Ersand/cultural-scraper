@@ -56,6 +56,11 @@ class HtmlFormatter:
         html_parts.append("<body>")
         html_parts.append(f"<header><h1>{self.title}</h1>")
         html_parts.append(f"<p class='date'>{self.date}</p></header>")
+        html_parts.append("<div class='update-button'>")
+        html_parts.append(
+            "<a href='https://github.com/Ersand/cultural-scraper/actions/workflows/deploy.yml' target='_blank' class='btn-update'>Actualitzar</a>"
+        )
+        html_parts.append("</div>")
 
         events_with_category = self._add_categories(events_by_source)
 
@@ -362,6 +367,9 @@ class HtmlFormatter:
         header { text-align: center; margin-bottom: 30px; padding: 20px; background: #2c3e50; color: white; border-radius: 8px; }
         header h1 { font-size: 2em; margin-bottom: 10px; }
         header .date { opacity: 0.8; }
+        .update-button { text-align: center; margin-bottom: 20px; }
+        .btn-update { display: inline-block; padding: 10px 20px; background: #95a5a6; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; }
+        .btn-update:hover { background: #7f8c8d; }
         .category-index { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .category-index h2 { font-size: 1.2em; margin-bottom: 15px; color: #2c3e50; text-align: center; }
         .category-actions { display: flex; gap: 10px; margin-bottom: 15px; }
