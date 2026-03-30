@@ -1,0 +1,111 @@
+categories:
+  category_keywords:
+    balls:
+    - ball
+    - dansa
+    - dansa
+    - flamenco
+    - salsa
+    cinema:
+    - cinema
+    - film
+    - "pel\xB7l\xEDcula"
+    - documental
+    - "sessi\xF3"
+    - projecc
+    exposicions:
+    - "exposici\xF3"
+    - expos
+    - "instal\xB7laci\xF3"
+    - mostra
+    - galeria
+    fires:
+    - fira
+    - mercats
+    - market
+    gastronomia:
+    - gastronomia
+    - cuina
+    - "culin\xE0ria"
+    - tast
+    - "degustaci\xF3"
+    - restaurant
+    infantil:
+    - infantil
+    - nens
+    - "fam\xEDlies"
+    - nens i nenes
+    literatura:
+    - llibre
+    - lectura
+    - "presentaci\xF3 de llibre"
+    - club de lectura
+    - recital
+    - poesia
+    "m\xFAsica":
+    - "m\xFAsica"
+    - musical
+    - concert
+    - symphony
+    - orquestra
+    - jazz
+    - rock
+    - pop
+    - festival
+    teatre:
+    - teatre
+    - teat
+    - obra
+    - "representaci\xF3"
+    xerrades:
+    - xerrada
+    - xerrades
+    - "confer\xE8ncia"
+    - "presentaci\xF3"
+    - presenta
+    - taula rodona
+    - debat
+    - "pon\xE8ncia"
+  family_keywords:
+  - infants
+  - nens
+  - nenes
+  - nens i nenes
+  - kids
+  - familiar
+  - "fam\xEDlies"
+  - infantil
+  - nens/
+filters:
+  age_group: adults
+  date: today
+  time_from: '16:00'
+output:
+  folder: output
+  format: html
+  show_errors: true
+scraper:
+  retry_count: 3
+  timeout: 30
+  user_agent: CulturalScraper/1.0 (personal project)
+sources:
+- category: arts
+  name: CCCB
+  type: cccb
+  url: https://www.cccb.org/ca/calendari
+- category: literature
+  name: "Ateneu Barcelon\xE8s"
+  type: ateneu
+  url: https://ateneubcn.cat/activitats/
+- category: literature
+  name: Biblioteques Barcelona
+  type: biblioteques
+  url: https://ajuntament.barcelona.cat/biblioteques/ca/activitats/
+- category: arts
+  name: Guia Barcelona
+  type: guia
+  url: https://guia.barcelona.cat/
+- category: arts
+  name: Time Out Barcelona
+  type: timeout
+  url: https://www.timeout.es/barcelona/es/que-hacer
