@@ -34,4 +34,3 @@ ENV/
 .ruff_cache/
 
 *.log
-output/

@@ -27,7 +27,7 @@ pre-commit:
 	ruff check cultural_scraper tests && ruff format --check cultural_scraper tests
 
 run:
-	cd cultural_scraper && python -m cultural_scraper.cli.main scrape -c config/config.yaml
+	python -m cultural_scraper.cli.main scrape -c cultural_scraper/config/config.yaml
 
 clean:
 	rm -rf output/*.html

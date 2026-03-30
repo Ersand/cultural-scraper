@@ -149,6 +149,13 @@ def scrape(
     output_path.write_text(output_text)
     console.print(f"[green]Output written to: {output_path}[/green]")
 
+    if extension == "html":
+        docs_path = Path("docs")
+        docs_path.mkdir(exist_ok=True)
+        docs_index = docs_path / "index.html"
+        docs_index.write_text(output_text)
+        console.print(f"[green]GitHub Pages: docs/index.html updated[/green]")
+
 
 @app.command()
 def validate(
