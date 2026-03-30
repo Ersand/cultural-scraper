@@ -231,7 +231,7 @@ class HtmlFormatter:
         html_parts.append("    const dayStr = dayEl.dataset.day;")
         html_parts.append("    const events = (window.allDayEvents || {})[dayStr] || [];")
         html_parts.append(
-            "    const visibleEvents = selectedCategories.length === 0 ? events : events.filter(e => selectedCategories.includes(e.category));"
+            "    const visibleEvents = selectedCategories.length === 0 ? [] : events.filter(e => selectedCategories.includes(e.category));"
         )
         html_parts.append("    ")
         html_parts.append("    const eventsContainer = dayEl.querySelector('.day-events');")
@@ -372,7 +372,7 @@ class HtmlFormatter:
         .sidebar { width: 280px; flex-shrink: 0; }
         .main-content { flex: 1; min-width: 0; }
         header { text-align: center; margin-bottom: 30px; padding: 20px; background: #2c3e50; color: white; border-radius: 8px; }
-        header h1 { font-size: 2em; margin-bottom: 10px; }
+        header h1 { font-size: 1.5em; margin-bottom: 10px; }
         header .date { opacity: 0.8; margin: 5px 0; }
         header .last-updated { opacity: 0.6; font-size: 0.8em; margin: 5px 0; }
         .update-button { text-align: center; margin-bottom: 20px; }
