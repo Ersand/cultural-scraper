@@ -15,7 +15,8 @@
         .main-content { flex: 1; min-width: 0; }
         header { text-align: center; margin-bottom: 30px; padding: 20px; background: #2c3e50; color: white; border-radius: 8px; }
         header h1 { font-size: 2em; margin-bottom: 10px; }
-        header .date { opacity: 0.8; }
+        header .date { opacity: 0.8; margin: 5px 0; }
+        header .last-updated { opacity: 0.6; font-size: 0.8em; margin: 5px 0; }
         .update-button { text-align: center; margin-bottom: 20px; }
         .btn-update { display: inline-block; padding: 10px 20px; background: #95a5a6; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; }
         .btn-update:hover { background: #7f8c8d; }
@@ -81,7 +82,9 @@
 </head>
 <body>
 <header><h1>Larry</h1>
-<p class='date'>30-03-2026</p></header>
+<p class='date'>Avui: 30-03-2026</p>
+<p class='last-updated'>Darrera actualització: 30-03-2026 15:15</p>
+</header>
 <div class='update-button'>
 <a href='https://github.com/Ersand/cultural-scraper/actions/workflows/deploy.yml' target='_blank' class='btn-update'>Actualitzar</a>
 </div>
