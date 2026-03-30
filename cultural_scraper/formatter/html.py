@@ -26,8 +26,19 @@ CATEGORY_COLORS = {
     "educació": "#d35400",
     "itineraris": "#2c3e50",
     "debat": "#7f8c8d",
+    "guia barcelona": "#e84393",
+    "biblioteques barcelona": "#00cec9",
+    "cccb": "#fd79a8",
+    "ateneu barcelonès": "#a29bfe",
+    "timeout barcelona": "#ff7675",
     "altres": "#95a5a6",
 }
+
+DEFAULT_COLOR = "#b2bec3"
+
+
+def get_category_color(category: str) -> str:
+    return CATEGORY_COLORS.get(category.lower(), DEFAULT_COLOR)
 
 
 class HtmlFormatter:
@@ -72,8 +83,6 @@ class HtmlFormatter:
         events_with_category = self._add_categories(events_by_source)
 
         day_events_by_organizer = {}
-        permanent_events_by_organizer = {}
-        range_events_by_organizer = {}
 
         for source, events in events_with_category.items():
             if source == "_errors":
@@ -83,32 +92,21 @@ class HtmlFormatter:
                 continue
 
             for event in events:
-                is_permanent = event.date and "permanent" in event.date.lower()
-                is_range = event.date and (
-                    "al " in event.date.lower()
-                    or "del " in event.date.lower()
-                    or "des de" in event.date.lower()
-                )
+                if not event.date:
+                    continue
+
+                is_permanent = "permanent" in event.date.lower()
+                if is_permanent:
+                    continue
 
                 organizer = event.organizer or source
 
                 if organizer not in day_events_by_organizer:
                     day_events_by_organizer[organizer] = []
-                if organizer not in permanent_events_by_organizer:
-                    permanent_events_by_organizer[organizer] = []
-                if organizer not in range_events_by_organizer:
-                    range_events_by_organizer[organizer] = []
 
-                if is_permanent:
-                    permanent_events_by_organizer[organizer].append(event)
-                elif is_range:
-                    range_events_by_organizer[organizer].append(event)
-                else:
-                    day_events_by_organizer[organizer].append(event)
+                day_events_by_organizer[organizer].append(event)
 
-        all_day_events = [e for events in day_events_by_organizer.values() for e in events] + [
-            e for events in range_events_by_organizer.values() for e in events
-        ]
+        all_day_events = [e for events in day_events_by_organizer.values() for e in events]
 
         today = datetime.now().date()
         next_month = today.replace(day=28) + timedelta(days=4)
@@ -147,7 +145,7 @@ class HtmlFormatter:
             html_parts.append("</div>")
             html_parts.append("<ul>")
             for cat, count in sorted(categories_with_events.items(), key=lambda x: -x[1]):
-                color = CATEGORY_COLORS.get(cat, "#95a5a6")
+                color = get_category_color(cat)
                 cat_display = cat.capitalize()
                 html_parts.append(
                     f"<li><label><input type='checkbox' class='category-filter' value='{cat}'> "
@@ -174,9 +172,7 @@ class HtmlFormatter:
         html_parts.append(calendar_html)
         html_parts.append("</div>")
 
-        total_events = len(all_day_events) + sum(
-            len(events) for events in permanent_events_by_organizer.values()
-        )
+        total_events = len(all_day_events)
         html_parts.append(f"<footer><p>Total: {total_events} esdeveniments</p></footer>")
 
         events_by_date_json = {}
@@ -187,7 +183,7 @@ class HtmlFormatter:
                 if day_str not in events_by_date_json:
                     events_by_date_json[day_str] = []
                 event_cat = getattr(event, "event_category", "altres")
-                category_color = CATEGORY_COLORS.get(event_cat, "#95a5a6")
+                category_color = get_category_color(event_cat)
                 events_by_date_json[day_str].append(
                     {
                         "title": event.title,
@@ -201,7 +197,7 @@ class HtmlFormatter:
                     }
                 )
 
-        categories_json = json.dumps(CATEGORY_COLORS)
+        categories_json = json.dumps({**CATEGORY_COLORS, "default": DEFAULT_COLOR})
 
         html_parts.append(
             f"<script>window.allDayEvents = {json.dumps(events_by_date_json)};</script>"
@@ -524,7 +520,7 @@ class HtmlFormatter:
 
                 for evt in day_events[:3]:
                     event_cat = getattr(evt, "event_category", "altres")
-                    color = CATEGORY_COLORS.get(event_cat, "#3498db")
+                    color = get_category_color(event_cat)
                     title_escaped = evt.title.replace("'", "\\'").replace('"', '\\"')
                     parts.append(
                         f"<div class='calendar-event' style='background:{color}' title='{title_escaped}'>{evt.title[:20]}</div>"

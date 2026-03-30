@@ -78,7 +78,7 @@ categories:
   - nens/
 filters:
   age_group: adults
-  date: today
+  date: month
   time_from: '16:00'
 output:
   folder: output
@@ -105,7 +105,7 @@ sources:
   name: Guia Barcelona
   type: guia
   url: https://guia.barcelona.cat/
-- category: arts
-  name: Time Out Barcelona
-  type: timeout
-  url: https://www.timeout.es/barcelona/es/que-hacer
+#- category: arts
+#  name: Time Out Barcelona
+#  type: timeout
+#  url: https://www.timeout.es/barcelona/es/que-h0acer

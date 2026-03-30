@@ -66,9 +66,13 @@ class EventFilter:
                 filtered.append(event)
         return filtered
 
+    GENERIC_CATEGORIES = {"agenda", "que fer", "altres", "otros", "other", "general"}
+
     def classify_category(self, event: Event) -> str:
         if event.category:
-            return event.category.lower()
+            cat = event.category.lower().strip()
+            if cat not in self.GENERIC_CATEGORIES:
+                return cat
 
         fields = [
             str(event.title) if event.title else "",
@@ -84,7 +88,10 @@ class EventFilter:
                 if kw.lower() in text_to_check:
                     return cat_name
 
-        return "altres"
+        fallback = event.source.lower().strip() if event.source else "altres"
+        if fallback in self.GENERIC_CATEGORIES or not fallback:
+            return "altres"
+        return fallback
 
     def _should_include(self, event: Event) -> bool:
         if not self._check_date(event):

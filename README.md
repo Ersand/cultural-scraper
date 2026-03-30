@@ -98,6 +98,4 @@ make test
 make clean
 ```
 
-## License
 
-MIT
