@@ -125,10 +125,13 @@ def scrape(
     else:
         display_date = date_filter
 
+    last_updated = datetime.now().strftime("%d-%m-%Y %H:%M")
+
     if output_format == "html":
         formatter = HtmlFormatter(
             "Larry",
             date=display_date,
+            last_updated=last_updated,
             category_classifier=event_filter.classify_category,
         )
         extension = "html"

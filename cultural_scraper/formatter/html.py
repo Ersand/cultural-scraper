@@ -35,10 +35,12 @@ class HtmlFormatter:
         self,
         title: str = "Larry",
         date: str | None = None,
+        last_updated: str | None = None,
         category_classifier=None,
     ) -> None:
         self.title = title
         self.date = date or datetime.now().strftime("%d-%m-%Y")
+        self.last_updated = last_updated
         self.category_classifier = category_classifier
 
     def format(self, events_by_source: dict[str, list[Event]]) -> str:
@@ -55,7 +57,12 @@ class HtmlFormatter:
         html_parts.append("</head>")
         html_parts.append("<body>")
         html_parts.append(f"<header><h1>{self.title}</h1>")
-        html_parts.append(f"<p class='date'>{self.date}</p></header>")
+        html_parts.append(f"<p class='date'>Avui: {self.date}</p>")
+        if self.last_updated:
+            html_parts.append(
+                f"<p class='last-updated'>Darrera actualització: {self.last_updated}</p>"
+            )
+        html_parts.append("</header>")
         html_parts.append("<div class='update-button'>")
         html_parts.append(
             "<a href='https://github.com/Ersand/cultural-scraper/actions/workflows/deploy.yml' target='_blank' class='btn-update'>Actualitzar</a>"
@@ -366,7 +373,8 @@ class HtmlFormatter:
         .main-content { flex: 1; min-width: 0; }
         header { text-align: center; margin-bottom: 30px; padding: 20px; background: #2c3e50; color: white; border-radius: 8px; }
         header h1 { font-size: 2em; margin-bottom: 10px; }
-        header .date { opacity: 0.8; }
+        header .date { opacity: 0.8; margin: 5px 0; }
+        header .last-updated { opacity: 0.6; font-size: 0.8em; margin: 5px 0; }
         .update-button { text-align: center; margin-bottom: 20px; }
         .btn-update { display: inline-block; padding: 10px 20px; background: #95a5a6; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; }
         .btn-update:hover { background: #7f8c8d; }
