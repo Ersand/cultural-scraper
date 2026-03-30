@@ -33,7 +33,7 @@ CATEGORY_COLORS = {
 class HtmlFormatter:
     def __init__(
         self,
-        title: str = "Cultural Plans",
+        title: str = "Larry",
         date: str | None = None,
         category_classifier=None,
     ) -> None:

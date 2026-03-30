@@ -127,13 +127,13 @@ def scrape(
 
     if output_format == "html":
         formatter = HtmlFormatter(
-            "Cultural Plans",
+            "Larry",
             date=display_date,
             category_classifier=event_filter.classify_category,
         )
         extension = "html"
     else:
-        formatter = MarkdownFormatter("Cultural Plans", date=display_date)
+        formatter = MarkdownFormatter("Larry", date=display_date)
         extension = "md"
 
     output_text = formatter.format(filtered_results)

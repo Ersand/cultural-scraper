@@ -3,7 +3,7 @@ from cultural_scraper.core import Event
 
 
 class MarkdownFormatter:
-    def __init__(self, title: str = "Cultural Plans", date: str | None = None) -> None:
+    def __init__(self, title: str = "Larry", date: str | None = None) -> None:
         self.title = title
         self.date = date or datetime.now().strftime("%d-%m-%Y")
 
