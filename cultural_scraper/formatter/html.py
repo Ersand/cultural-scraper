@@ -16,13 +16,10 @@ CATEGORY_COLORS = {
     "infantil": "#4caf50",
     "fires": "#ff5722",
     "gastronomia": "#795548",
-    "agenda": "#3498db",
-    "que fer": "#f1c40f",
     "art": "#e67e22",
     "família": "#27ae60",
     "cursos i tallers": "#8e44ad",
     "audiovisuals": "#2980b9",
-    "amics cccb": "#c0392b",
     "accessible": "#16a085",
     "educació": "#d35400",
     "itineraris": "#2c3e50",
@@ -31,14 +28,13 @@ CATEGORY_COLORS = {
 }
 
 SOURCE_COLORS = {
-    "cccb": "#fd79a8",
-    "ateneu barcelonès": "#a29bfe",
-    "biblioteques barcelona": "#00cec9",
-    "guia barcelona": "#e84393",
-    "timeout": "#ff7675",
+    "cccb": "#e63946",
+    "ateneu barcelonès": "#457b9d",
+    "biblioteques barcelona": "#2a9d8f",
+    "guia barcelona": "#f4a261",
 }
 
-DEFAULT_COLOR = "#b2bec3"
+DEFAULT_COLOR = "#6c757d"
 
 
 def get_category_color(category: str) -> str:
@@ -290,18 +286,15 @@ class HtmlFormatter:
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
         html_parts.append("  ")
-        html_parts.append("  const categoryCount = categoryCheckboxes.length;")
-        html_parts.append("  const sourceCount = sourceCheckboxes.length;")
-        html_parts.append("  ")
         html_parts.append("  document.querySelectorAll('.calendar-day').forEach(dayEl => {")
         html_parts.append("    const dayStr = dayEl.dataset.day;")
         html_parts.append("    const events = (window.allDayEvents || {})[dayStr] || [];")
         html_parts.append("    const visibleEvents = events.filter(e => {")
         html_parts.append(
-            "      const categoryMatch = categoryCount === 0 ? false : (selectedCategories.length === 0 || selectedCategories.includes(e.category));"
+            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
         )
         html_parts.append(
-            "      const sourceMatch = sourceCount === 0 ? false : (selectedSources.length === 0 || selectedSources.includes(e.source));"
+            "      const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
         )
         html_parts.append("      return categoryMatch && sourceMatch;")
         html_parts.append("    });")
@@ -370,18 +363,12 @@ class HtmlFormatter:
         )
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
-        html_parts.append(
-            "  const categoryCount = document.querySelectorAll('.category-filter').length;"
-        )
-        html_parts.append(
-            "  const sourceCount = document.querySelectorAll('.source-filter').length;"
-        )
         html_parts.append("  const visibleEvents = events.filter(e => {")
         html_parts.append(
-            "    const categoryMatch = categoryCount === 0 ? false : (selectedCategories.length === 0 || selectedCategories.includes(e.category));"
+            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
         )
         html_parts.append(
-            "    const sourceMatch = sourceCount === 0 ? false : (selectedSources.length === 0 || selectedSources.includes(e.source));"
+            "    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
         )
         html_parts.append("    return categoryMatch && sourceMatch;")
         html_parts.append("  });")
