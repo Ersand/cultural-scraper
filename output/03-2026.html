@@ -85,13 +85,26 @@
 <body>
 <header><h1>Larry</h1>
 <p class='date'>Avui: 03-2026</p>
-<p class='last-updated'>Darrera actualització: 31-03-2026 10:55</p>
+<p class='last-updated'>Darrera actualització: 31-03-2026 11:42</p>
 </header>
 <div class='update-button'>
 <a href='https://github.com/Ersand/cultural-scraper/actions/workflows/deploy.yml' target='_blank' class='btn-update'>Actualitzar</a>
 </div>
 <div class='container'>
 <aside class='sidebar'>
+<nav class='source-index'>
+<h2>Llocs</h2>
+<div class='category-actions'>
+<button onclick='selectAllSources()' class='btn-select'>Tots</button>
+<button onclick='deselectAllSources()' class='btn-deselect'>Cap</button>
+</div>
+<ul>
+<li><label><input type='checkbox' class='source-filter' value='CCCB'> <span class='category-dot' style='background:#fd79a8'></span>Cccb (48)</label></li>
+<li><label><input type='checkbox' class='source-filter' value='Guia Barcelona'> <span class='category-dot' style='background:#e84393'></span>Guia barcelona (18)</label></li>
+<li><label><input type='checkbox' class='source-filter' value='Ateneu Barcelonès'> <span class='category-dot' style='background:#a29bfe'></span>Ateneu barcelonès (17)</label></li>
+<li><label><input type='checkbox' class='source-filter' value='Biblioteques Barcelona'> <span class='category-dot' style='background:#00cec9'></span>Biblioteques barcelona (8)</label></li>
+</ul>
+</nav>
 <nav class='category-index'>
 <h2>Categories</h2>
 <div class='category-actions'>
@@ -124,19 +137,6 @@
 <li><label><input type='checkbox' class='category-filter' value='palau de la música catalana'> <span class='category-dot' style='background:#b2bec3'></span>Palau de la música catalana (1)</label></li>
 <li><label><input type='checkbox' class='category-filter' value='sala upload *poble espanyol'> <span class='category-dot' style='background:#b2bec3'></span>Sala upload *poble espanyol (1)</label></li>
 <li><label><input type='checkbox' class='category-filter' value='casa batlló'> <span class='category-dot' style='background:#b2bec3'></span>Casa batlló (1)</label></li>
-</ul>
-</nav>
-<nav class='source-index'>
-<h2>Llocs</h2>
-<div class='category-actions'>
-<button onclick='selectAllSources()' class='btn-select'>Tots</button>
-<button onclick='deselectAllSources()' class='btn-deselect'>Cap</button>
-</div>
-<ul>
-<li><label><input type='checkbox' class='source-filter' value='CCCB'> <span class='category-dot' style='background:#fd79a8'></span>Cccb (48)</label></li>
-<li><label><input type='checkbox' class='source-filter' value='Guia Barcelona'> <span class='category-dot' style='background:#e84393'></span>Guia barcelona (18)</label></li>
-<li><label><input type='checkbox' class='source-filter' value='Ateneu Barcelonès'> <span class='category-dot' style='background:#a29bfe'></span>Ateneu barcelonès (17)</label></li>
-<li><label><input type='checkbox' class='source-filter' value='Biblioteques Barcelona'> <span class='category-dot' style='background:#00cec9'></span>Biblioteques barcelona (8)</label></li>
 </ul>
 </nav>
 </aside>

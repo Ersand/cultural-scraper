@@ -150,28 +150,6 @@ class HtmlFormatter:
         if categories_with_events or sources_with_events:
             html_parts.append("<aside class='sidebar'>")
 
-            if categories_with_events:
-                html_parts.append("<nav class='category-index'>")
-                html_parts.append("<h2>Categories</h2>")
-                html_parts.append("<div class='category-actions'>")
-                html_parts.append(
-                    "<button onclick='selectAllCategories()' class='btn-select'>Tots</button>"
-                )
-                html_parts.append(
-                    "<button onclick='deselectAllCategories()' class='btn-deselect'>Cap</button>"
-                )
-                html_parts.append("</div>")
-                html_parts.append("<ul>")
-                for cat, count in sorted(categories_with_events.items(), key=lambda x: -x[1]):
-                    color = get_category_color(cat)
-                    cat_display = cat.capitalize()
-                    html_parts.append(
-                        f"<li><label><input type='checkbox' class='category-filter' value='{cat}'> "
-                        f"<span class='category-dot' style='background:{color}'></span>{cat_display} ({count})</label></li>"
-                    )
-                html_parts.append("</ul>")
-                html_parts.append("</nav>")
-
             if sources_with_events:
                 html_parts.append("<nav class='source-index'>")
                 html_parts.append("<h2>Llocs</h2>")
@@ -190,6 +168,28 @@ class HtmlFormatter:
                     html_parts.append(
                         f"<li><label><input type='checkbox' class='source-filter' value='{src}'> "
                         f"<span class='category-dot' style='background:{color}'></span>{src_display} ({count})</label></li>"
+                    )
+                html_parts.append("</ul>")
+                html_parts.append("</nav>")
+
+            if categories_with_events:
+                html_parts.append("<nav class='category-index'>")
+                html_parts.append("<h2>Categories</h2>")
+                html_parts.append("<div class='category-actions'>")
+                html_parts.append(
+                    "<button onclick='selectAllCategories()' class='btn-select'>Tots</button>"
+                )
+                html_parts.append(
+                    "<button onclick='deselectAllCategories()' class='btn-deselect'>Cap</button>"
+                )
+                html_parts.append("</div>")
+                html_parts.append("<ul>")
+                for cat, count in sorted(categories_with_events.items(), key=lambda x: -x[1]):
+                    color = get_category_color(cat)
+                    cat_display = cat.capitalize()
+                    html_parts.append(
+                        f"<li><label><input type='checkbox' class='category-filter' value='{cat}'> "
+                        f"<span class='category-dot' style='background:{color}'></span>{cat_display} ({count})</label></li>"
                     )
                 html_parts.append("</ul>")
                 html_parts.append("</nav>")
