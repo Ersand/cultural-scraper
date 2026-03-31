@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from typing import Any, Optional
 from cultural_scraper.core import BaseScraper, Event
 
 
@@ -46,10 +47,12 @@ class CCCBScraper(BaseScraper):
 
             for date_row in date_rows:
                 day_elem = date_row.select_one(".agenda-card-date-num")
-                day = int(day_elem.get_text(strip=True)) if day_elem else None
+                day: int | None = int(day_elem.get_text(strip=True)) if day_elem else None
 
                 cards = date_row.select(".agenda-card-item")
                 for card in cards:
+                    if day is None:
+                        continue
                     try:
                         event = self._parse_card(card, day, month_str, year)
                         if event:
@@ -78,7 +81,7 @@ class CCCBScraper(BaseScraper):
 
         return None, None
 
-    def _parse_card(self, card, day: int, month: int, year: int) -> Event:
+    def _parse_card(self, card: Any, day: int, month: int, year: int) -> Optional[Event]:
         title_elem = card.select_one(".agenda-card-title")
         if not title_elem:
             return None

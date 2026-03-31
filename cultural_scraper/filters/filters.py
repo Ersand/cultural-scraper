@@ -187,11 +187,8 @@ class EventFilter:
             except ValueError:
                 continue
 
-        parsed = self._parse_catalan_date(date_str, today)
-        if parsed:
-            return parsed
-
-        return None
+        result: Optional[date] = self._parse_catalan_date(date_str, today)
+        return result
 
     def _parse_catalan_date(self, date_str: str, today: date) -> Optional[date]:
         date_str_lower = date_str.lower()

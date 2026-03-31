@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date as date_type
 import json
 import re
+from typing import Any
 from cultural_scraper.core import Event
 
 
@@ -82,7 +83,7 @@ class HtmlFormatter:
 
         events_with_category = self._add_categories(events_by_source)
 
-        day_events_by_organizer = {}
+        day_events_by_organizer: dict[str, list[Event]] = {}
 
         for source, events in events_with_category.items():
             if source == "_errors":
@@ -117,7 +118,8 @@ class HtmlFormatter:
         all_day_events = [
             e
             for e in all_day_events
-            if self._parse_event_dates(e.date)
+            if e.date
+            and self._parse_event_dates(e.date)
             and any(today <= d < following_month for d in self._parse_event_dates(e.date))
         ]
 
@@ -175,8 +177,10 @@ class HtmlFormatter:
         total_events = len(all_day_events)
         html_parts.append(f"<footer><p>Total: {total_events} esdeveniments</p></footer>")
 
-        events_by_date_json = {}
+        events_by_date_json: dict[str, list[dict[str, Any]]] = {}
         for event in all_day_events:
+            if not event.date:
+                continue
             dates = self._parse_event_dates(event.date)
             for d in dates:
                 day_str = d.strftime("%Y-%m-%d")
@@ -434,9 +438,11 @@ class HtmlFormatter:
         """
 
     def _generate_two_months_calendar(self, events: list[Event]) -> str:
-        events_by_date: dict[datetime.date, list[Event]] = {}
+        events_by_date: dict[date_type, list[Event]] = {}
 
         for event in events:
+            if not event.date:
+                continue
             dates = self._parse_event_dates(event.date)
             for d in dates:
                 if d not in events_by_date:
@@ -444,7 +450,7 @@ class HtmlFormatter:
                 events_by_date[d].append(event)
 
         today = datetime.now().date()
-        current_month = today.replace(day=1)
+        current_month = datetime.combine(today.replace(day=1), datetime.min.time())
         next_month = current_month.replace(day=28) + timedelta(days=4)
         next_month = next_month.replace(day=1)
 
@@ -477,8 +483,8 @@ class HtmlFormatter:
     def _render_month_calendar(
         self,
         month: datetime,
-        events_by_date: dict[datetime.date, list[Event]],
-        today: datetime.date,
+        events_by_date: dict[date_type, list[Event]],
+        today: date_type,
     ) -> str:
         parts = []
 
@@ -541,8 +547,8 @@ class HtmlFormatter:
 
         return "\n".join(parts)
 
-    def _parse_event_dates(self, date_str: str) -> list[datetime.date]:
-        dates = []
+    def _parse_event_dates(self, date_str: str) -> list[date_type]:
+        dates: list[date_type] = []
         if not date_str:
             return dates
 

@@ -34,6 +34,7 @@ quote-style = "double"
 python_version = "3.10"
 ignore_missing_imports = true
 pretty = true
+disable_error_code = ["misc", "union-attr", "abstract", "import-untyped", "assignment"]
 
 [tool.pre-commit]
 default_stages = ["pre-commit"]

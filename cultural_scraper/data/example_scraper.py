@@ -14,7 +14,7 @@ class ExampleScraper(BaseScraper):
         if not soup:
             return []
 
-        events = []
+        events: list[Event] = []
 
         # Customize these selectors based on the target website's HTML structure
         # Example selectors (adjust for actual website):

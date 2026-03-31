@@ -21,6 +21,7 @@ class Event:
     source: str = ""
     organizer: Optional[str] = None
     tags: list[str] = field(default_factory=list)
+    event_category: Optional[str] = None
 
 
 class BaseScraper(ABC):

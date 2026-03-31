@@ -161,7 +161,7 @@ class GuiaBarcelonaScraper(BaseScraper):
                         organizer=location,
                         tags=[category, location]
                         if category and location
-                        else [category or location],
+                        else [category or location or ""],
                     )
                     events.append(event)
                 elif event_url and "/ca/detall/" in event_url:
