@@ -139,10 +139,10 @@ class TimeoutScraper(BaseScraper):
                         title=title,
                         date=date_text,
                         location=None,
-                        category=category,
                         url=href,
                         source=self.name,
                         organizer=title,
+                        tags=[category, "Time Out"] if category else ["Time Out"],
                     )
                     result.events.append(event)
                 elif is_venue:
@@ -189,10 +189,10 @@ class TimeoutScraper(BaseScraper):
                     title=title,
                     date=date_text,
                     location=None,
-                    category=None,
                     url=url,
                     source=self.name,
                     organizer=title,
+                    tags=["Time Out"],
                 )
                 result.events.append(event)
             elif not date_text:

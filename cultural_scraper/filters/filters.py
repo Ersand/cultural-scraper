@@ -69,10 +69,10 @@ class EventFilter:
     GENERIC_CATEGORIES = {"agenda", "que fer", "altres", "otros", "other", "general"}
 
     def classify_category(self, event: Event) -> str:
-        if event.category:
-            cat = event.category.lower().strip()
-            if cat not in self.GENERIC_CATEGORIES:
-                return cat
+        if event.tags:
+            for tag in event.tags:
+                if tag and tag.lower() not in self.GENERIC_CATEGORIES:
+                    return tag.lower()
 
         fields = [
             str(event.title) if event.title else "",
@@ -153,11 +153,8 @@ class EventFilter:
             str(event.description) if event.description else "",
             str(event.location) if event.location else "",
         ]
-        if event.category:
-            if isinstance(event.category, list):
-                fields.extend(str(c) for c in event.category)
-            else:
-                fields.append(str(event.category))
+        if event.tags:
+            fields.extend(str(t) for t in event.tags)
 
         text_to_check = " ".join(fields).lower()
 

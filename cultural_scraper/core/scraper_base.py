@@ -17,10 +17,14 @@ class Event:
     location: Optional[str] = None
     price: Optional[str] = None
     description: Optional[str] = None
-    category: Optional[str] = None
     url: Optional[str] = None
     source: str = ""
     organizer: Optional[str] = None
+    tags: list[str] = None
+
+    def __post_init__(self):
+        if self.tags is None:
+            self.tags = []
 
 
 class BaseScraper(ABC):
@@ -28,7 +32,7 @@ class BaseScraper(ABC):
         self.name = name
         self.url = url
         self.config = config or {}
-        self.logger = logging.getLogger(f"{__name__}.{name}")
+        self.logger = logging.getLogger(f"{__name__}.{self.name}")
         self.manager: Optional["ScraperManager"] = None
 
     @abstractmethod

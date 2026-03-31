@@ -114,11 +114,11 @@ class AteneuScraper(BaseScraper):
                     date=date,
                     time=time,
                     location=location if location else None,
-                    category=category,
                     price=price,
                     url=link,
                     source=self.name,
                     organizer="Ateneu Barcelonès",
+                    tags=[category, "Ateneu Barcelonès"] if category else ["Ateneu Barcelonès"],
                 )
                 events.append(event)
 

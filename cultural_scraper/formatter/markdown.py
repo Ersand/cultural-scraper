@@ -57,8 +57,8 @@ class MarkdownFormatter:
             details.append(f"**Location:** {event.location}")
         if event.price:
             details.append(f"**Price:** {event.price}")
-        if event.category:
-            details.append(f"**Category:** {event.category}")
+        if event.tags:
+            details.append(f"**Tags:** {', '.join(event.tags)}")
 
         if details:
             parts.append(", ".join(details))
