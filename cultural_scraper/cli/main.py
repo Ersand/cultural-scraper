@@ -157,7 +157,7 @@ def scrape(
         docs_path.mkdir(exist_ok=True)
         docs_index = docs_path / "index.html"
         docs_index.write_text(output_text)
-        console.print(f"[green]GitHub Pages: docs/index.html updated[/green]")
+        console.print("[green]GitHub Pages: docs/index.html updated[/green]")
 
 
 @app.command()

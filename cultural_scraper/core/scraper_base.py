@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from typing import Any, Optional, TYPE_CHECKING
 import logging
@@ -20,11 +20,7 @@ class Event:
     url: Optional[str] = None
     source: str = ""
     organizer: Optional[str] = None
-    tags: list[str] = None
-
-    def __post_init__(self):
-        if self.tags is None:
-            self.tags = []
+    tags: list[str] = field(default_factory=list)
 
 
 class BaseScraper(ABC):
