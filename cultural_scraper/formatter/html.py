@@ -141,9 +141,15 @@ class HtmlFormatter:
 
             source = event.source or event.organizer or ""
             if source:
-                if source not in sources_with_events:
-                    sources_with_events[source] = 0
-                sources_with_events[source] += 1
+                if source.lower() == "cccb" and event.tags:
+                    first_tag = event.tags[0].lower() if event.tags[0] else ""
+                    if first_tag == "amics cccb":
+                        source = "CCCB"
+
+                if source.lower() != "timeout":
+                    if source not in sources_with_events:
+                        sources_with_events[source] = 0
+                    sources_with_events[source] += 1
 
         html_parts.append("<div class='container'>")
 
@@ -284,15 +290,18 @@ class HtmlFormatter:
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
         html_parts.append("  ")
+        html_parts.append("  const categoryCount = categoryCheckboxes.length;")
+        html_parts.append("  const sourceCount = sourceCheckboxes.length;")
+        html_parts.append("  ")
         html_parts.append("  document.querySelectorAll('.calendar-day').forEach(dayEl => {")
         html_parts.append("    const dayStr = dayEl.dataset.day;")
         html_parts.append("    const events = (window.allDayEvents || {})[dayStr] || [];")
         html_parts.append("    const visibleEvents = events.filter(e => {")
         html_parts.append(
-            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
+            "      const categoryMatch = categoryCount === 0 ? false : (selectedCategories.length === 0 || selectedCategories.includes(e.category));"
         )
         html_parts.append(
-            "      const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
+            "      const sourceMatch = sourceCount === 0 ? false : (selectedSources.length === 0 || selectedSources.includes(e.source));"
         )
         html_parts.append("      return categoryMatch && sourceMatch;")
         html_parts.append("    });")
@@ -361,12 +370,18 @@ class HtmlFormatter:
         )
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
-        html_parts.append("  const visibleEvents = events.filter(e => {")
         html_parts.append(
-            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
+            "  const categoryCount = document.querySelectorAll('.category-filter').length;"
         )
         html_parts.append(
-            "    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
+            "  const sourceCount = document.querySelectorAll('.source-filter').length;"
+        )
+        html_parts.append("  const visibleEvents = events.filter(e => {")
+        html_parts.append(
+            "    const categoryMatch = categoryCount === 0 ? false : (selectedCategories.length === 0 || selectedCategories.includes(e.category));"
+        )
+        html_parts.append(
+            "    const sourceMatch = sourceCount === 0 ? false : (selectedSources.length === 0 || selectedSources.includes(e.source));"
         )
         html_parts.append("    return categoryMatch && sourceMatch;")
         html_parts.append("  });")

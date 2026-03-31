@@ -85,7 +85,7 @@
 <body>
 <header><h1>Larry</h1>
 <p class='date'>Avui: 03-2026</p>
-<p class='last-updated'>Darrera actualització: 31-03-2026 11:42</p>
+<p class='last-updated'>Darrera actualització: 31-03-2026 11:49</p>
 </header>
 <div class='update-button'>
 <a href='https://github.com/Ersand/cultural-scraper/actions/workflows/deploy.yml' target='_blank' class='btn-update'>Actualitzar</a>
@@ -533,12 +533,15 @@ function filterByCategory() {
     .filter(cb => cb.checked)
     .map(cb => cb.value);
   
+  const categoryCount = categoryCheckboxes.length;
+  const sourceCount = sourceCheckboxes.length;
+  
   document.querySelectorAll('.calendar-day').forEach(dayEl => {
     const dayStr = dayEl.dataset.day;
     const events = (window.allDayEvents || {})[dayStr] || [];
     const visibleEvents = events.filter(e => {
-      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);
-      const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);
+      const categoryMatch = categoryCount === 0 ? false : (selectedCategories.length === 0 || selectedCategories.includes(e.category));
+      const sourceMatch = sourceCount === 0 ? false : (selectedSources.length === 0 || selectedSources.includes(e.source));
       return categoryMatch && sourceMatch;
     });
     
@@ -594,9 +597,11 @@ function showDayEvents(dayStr) {
   const selectedSources = Array.from(document.querySelectorAll('.source-filter'))
     .filter(cb => cb.checked)
     .map(cb => cb.value);
+  const categoryCount = document.querySelectorAll('.category-filter').length;
+  const sourceCount = document.querySelectorAll('.source-filter').length;
   const visibleEvents = events.filter(e => {
-    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);
-    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);
+    const categoryMatch = categoryCount === 0 ? false : (selectedCategories.length === 0 || selectedCategories.includes(e.category));
+    const sourceMatch = sourceCount === 0 ? false : (selectedSources.length === 0 || selectedSources.includes(e.source));
     return categoryMatch && sourceMatch;
   });
   
