@@ -30,8 +30,11 @@ CATEGORY_COLORS = {
 SOURCE_COLORS = {
     "cccb": "#e63946",
     "ateneu barcelonès": "#457b9d",
+    "ateneu": "#457b9d",
     "biblioteques barcelona": "#2a9d8f",
+    "biblioteques": "#2a9d8f",
     "guia barcelona": "#f4a261",
+    "guia": "#f4a261",
 }
 
 DEFAULT_COLOR = "#6c757d"
@@ -128,24 +131,36 @@ class HtmlFormatter:
 
         categories_with_events = {}
         sources_with_events = {}
+
+        known_sources = {
+            "cccb",
+            "ateneu barcelonès",
+            "biblioteques barcelona",
+            "guia barcelona",
+        }
+
         for event in all_day_events:
-            if hasattr(event, "event_category") and event.event_category:
-                cat = event.event_category
-                if cat not in categories_with_events:
-                    categories_with_events[cat] = 0
-                categories_with_events[cat] += 1
+            event_tags = event.tags or []
 
-            source = event.source or event.organizer or ""
-            if source:
-                if source.lower() == "cccb" and event.tags:
-                    first_tag = event.tags[0].lower() if event.tags[0] else ""
-                    if first_tag == "amics cccb":
-                        source = "CCCB"
+            for tag in event_tags:
+                if not tag:
+                    continue
 
-                if source.lower() != "timeout":
-                    if source not in sources_with_events:
-                        sources_with_events[source] = 0
-                    sources_with_events[source] += 1
+                tag_lower = tag.lower()
+
+                if tag_lower in known_sources:
+                    if tag not in sources_with_events:
+                        sources_with_events[tag] = 0
+                    sources_with_events[tag] += 1
+                else:
+                    if tag not in categories_with_events:
+                        categories_with_events[tag] = 0
+                    categories_with_events[tag] += 1
+
+        if not sources_with_events:
+            sources_with_events["Altres"] = 0
+        if not categories_with_events:
+            categories_with_events["Altres"] = 0
 
         html_parts.append("<div class='container'>")
 
@@ -239,6 +254,7 @@ class HtmlFormatter:
                         "location": event.location,
                         "category": event_cat,
                         "color": category_color,
+                        "tags": event.tags,
                     }
                 )
 
@@ -290,11 +306,12 @@ class HtmlFormatter:
         html_parts.append("    const dayStr = dayEl.dataset.day;")
         html_parts.append("    const events = (window.allDayEvents || {})[dayStr] || [];")
         html_parts.append("    const visibleEvents = events.filter(e => {")
+        html_parts.append("      const eventTags = e.tags || [];")
         html_parts.append(
-            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
+            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.some(cat => eventTags.includes(cat));"
         )
         html_parts.append(
-            "      const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
+            "      const sourceMatch = selectedSources.length === 0 || selectedSources.some(src => eventTags.includes(src));"
         )
         html_parts.append("      return categoryMatch && sourceMatch;")
         html_parts.append("    });")
@@ -364,11 +381,12 @@ class HtmlFormatter:
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
         html_parts.append("  const visibleEvents = events.filter(e => {")
+        html_parts.append("    const eventTags = e.tags || [];")
         html_parts.append(
-            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
+            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.some(cat => eventTags.includes(cat));"
         )
         html_parts.append(
-            "    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
+            "    const sourceMatch = selectedSources.length === 0 || selectedSources.some(src => eventTags.includes(src));"
         )
         html_parts.append("    return categoryMatch && sourceMatch;")
         html_parts.append("  });")
