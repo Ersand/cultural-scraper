@@ -27,12 +27,15 @@ CATEGORY_COLORS = {
     "educació": "#d35400",
     "itineraris": "#2c3e50",
     "debat": "#7f8c8d",
-    "guia barcelona": "#e84393",
-    "biblioteques barcelona": "#00cec9",
+    "altres": "#95a5a6",
+}
+
+SOURCE_COLORS = {
     "cccb": "#fd79a8",
     "ateneu barcelonès": "#a29bfe",
-    "timeout barcelona": "#ff7675",
-    "altres": "#95a5a6",
+    "biblioteques barcelona": "#00cec9",
+    "guia barcelona": "#e84393",
+    "timeout": "#ff7675",
 }
 
 DEFAULT_COLOR = "#b2bec3"
@@ -40,6 +43,10 @@ DEFAULT_COLOR = "#b2bec3"
 
 def get_category_color(category: str) -> str:
     return CATEGORY_COLORS.get(category.lower(), DEFAULT_COLOR)
+
+
+def get_source_color(source: str) -> str:
+    return SOURCE_COLORS.get(source.lower(), DEFAULT_COLOR)
 
 
 class HtmlFormatter:
@@ -124,6 +131,7 @@ class HtmlFormatter:
         ]
 
         categories_with_events = {}
+        sources_with_events = {}
         for event in all_day_events:
             if hasattr(event, "event_category") and event.event_category:
                 cat = event.event_category
@@ -131,30 +139,61 @@ class HtmlFormatter:
                     categories_with_events[cat] = 0
                 categories_with_events[cat] += 1
 
+            source = event.source or event.organizer or ""
+            if source:
+                if source not in sources_with_events:
+                    sources_with_events[source] = 0
+                sources_with_events[source] += 1
+
         html_parts.append("<div class='container'>")
 
-        if categories_with_events:
+        if categories_with_events or sources_with_events:
             html_parts.append("<aside class='sidebar'>")
-            html_parts.append("<nav class='category-index'>")
-            html_parts.append("<h2>Categories</h2>")
-            html_parts.append("<div class='category-actions'>")
-            html_parts.append(
-                "<button onclick='selectAllCategories()' class='btn-select'>Tots</button>"
-            )
-            html_parts.append(
-                "<button onclick='deselectAllCategories()' class='btn-deselect'>Cap</button>"
-            )
-            html_parts.append("</div>")
-            html_parts.append("<ul>")
-            for cat, count in sorted(categories_with_events.items(), key=lambda x: -x[1]):
-                color = get_category_color(cat)
-                cat_display = cat.capitalize()
+
+            if categories_with_events:
+                html_parts.append("<nav class='category-index'>")
+                html_parts.append("<h2>Categories</h2>")
+                html_parts.append("<div class='category-actions'>")
                 html_parts.append(
-                    f"<li><label><input type='checkbox' class='category-filter' value='{cat}'> "
-                    f"<span class='category-dot' style='background:{color}'></span>{cat_display} ({count})</label></li>"
+                    "<button onclick='selectAllCategories()' class='btn-select'>Tots</button>"
                 )
-            html_parts.append("</ul>")
-            html_parts.append("</nav>")
+                html_parts.append(
+                    "<button onclick='deselectAllCategories()' class='btn-deselect'>Cap</button>"
+                )
+                html_parts.append("</div>")
+                html_parts.append("<ul>")
+                for cat, count in sorted(categories_with_events.items(), key=lambda x: -x[1]):
+                    color = get_category_color(cat)
+                    cat_display = cat.capitalize()
+                    html_parts.append(
+                        f"<li><label><input type='checkbox' class='category-filter' value='{cat}'> "
+                        f"<span class='category-dot' style='background:{color}'></span>{cat_display} ({count})</label></li>"
+                    )
+                html_parts.append("</ul>")
+                html_parts.append("</nav>")
+
+            if sources_with_events:
+                html_parts.append("<nav class='source-index'>")
+                html_parts.append("<h2>Llocs</h2>")
+                html_parts.append("<div class='category-actions'>")
+                html_parts.append(
+                    "<button onclick='selectAllSources()' class='btn-select'>Tots</button>"
+                )
+                html_parts.append(
+                    "<button onclick='deselectAllSources()' class='btn-deselect'>Cap</button>"
+                )
+                html_parts.append("</div>")
+                html_parts.append("<ul>")
+                for src, count in sorted(sources_with_events.items(), key=lambda x: -x[1]):
+                    color = get_source_color(src)
+                    src_display = src.capitalize()
+                    html_parts.append(
+                        f"<li><label><input type='checkbox' class='source-filter' value='{src}'> "
+                        f"<span class='category-dot' style='background:{color}'></span>{src_display} ({count})</label></li>"
+                    )
+                html_parts.append("</ul>")
+                html_parts.append("</nav>")
+
             html_parts.append("</aside>")
 
         html_parts.append("<div class='main-content'>")
@@ -221,18 +260,42 @@ class HtmlFormatter:
         )
         html_parts.append("  filterByCategory();")
         html_parts.append("}")
+        html_parts.append("function selectAllSources() {")
+        html_parts.append(
+            "  document.querySelectorAll('.source-filter').forEach(cb => cb.checked = true);"
+        )
+        html_parts.append("  filterByCategory();")
+        html_parts.append("}")
+        html_parts.append("function deselectAllSources() {")
+        html_parts.append(
+            "  document.querySelectorAll('.source-filter').forEach(cb => cb.checked = false);"
+        )
+        html_parts.append("  filterByCategory();")
+        html_parts.append("}")
         html_parts.append("function filterByCategory() {")
-        html_parts.append("  const checkboxes = document.querySelectorAll('.category-filter');")
-        html_parts.append("  const selectedCategories = Array.from(checkboxes)")
+        html_parts.append(
+            "  const categoryCheckboxes = document.querySelectorAll('.category-filter');"
+        )
+        html_parts.append("  const selectedCategories = Array.from(categoryCheckboxes)")
+        html_parts.append("    .filter(cb => cb.checked)")
+        html_parts.append("    .map(cb => cb.value);")
+        html_parts.append("  const sourceCheckboxes = document.querySelectorAll('.source-filter');")
+        html_parts.append("  const selectedSources = Array.from(sourceCheckboxes)")
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
         html_parts.append("  ")
         html_parts.append("  document.querySelectorAll('.calendar-day').forEach(dayEl => {")
         html_parts.append("    const dayStr = dayEl.dataset.day;")
         html_parts.append("    const events = (window.allDayEvents || {})[dayStr] || [];")
+        html_parts.append("    const visibleEvents = events.filter(e => {")
         html_parts.append(
-            "    const visibleEvents = selectedCategories.length === 0 ? [] : events.filter(e => selectedCategories.includes(e.category));"
+            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
         )
+        html_parts.append(
+            "      const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
+        )
+        html_parts.append("      return categoryMatch && sourceMatch;")
+        html_parts.append("    });")
         html_parts.append("    ")
         html_parts.append("    const eventsContainer = dayEl.querySelector('.day-events');")
         html_parts.append("    if (eventsContainer) {")
@@ -294,8 +357,19 @@ class HtmlFormatter:
         html_parts.append("    .filter(cb => cb.checked)")
         html_parts.append("    .map(cb => cb.value);")
         html_parts.append(
-            "  const visibleEvents = selectedCategories.length === 0 ? events : events.filter(e => selectedCategories.includes(e.category));"
+            "  const selectedSources = Array.from(document.querySelectorAll('.source-filter'))"
         )
+        html_parts.append("    .filter(cb => cb.checked)")
+        html_parts.append("    .map(cb => cb.value);")
+        html_parts.append("  const visibleEvents = events.filter(e => {")
+        html_parts.append(
+            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(e.category);"
+        )
+        html_parts.append(
+            "    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(e.source);"
+        )
+        html_parts.append("    return categoryMatch && sourceMatch;")
+        html_parts.append("  });")
         html_parts.append("  ")
         html_parts.append("  if (visibleEvents.length === 0) {")
         html_parts.append(
@@ -378,8 +452,10 @@ class HtmlFormatter:
         .update-button { text-align: center; margin-bottom: 20px; }
         .btn-update { display: inline-block; padding: 10px 20px; background: #95a5a6; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; }
         .btn-update:hover { background: #7f8c8d; }
-        .category-index { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .category-index { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .category-index h2 { font-size: 1.2em; margin-bottom: 15px; color: #2c3e50; text-align: center; }
+        .source-index { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .source-index h2 { font-size: 1.2em; margin-bottom: 15px; color: #2c3e50; text-align: center; }
         .category-actions { display: flex; gap: 10px; margin-bottom: 15px; }
         .category-actions button { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
         .btn-select { background: #95a5a6; color: white; }
