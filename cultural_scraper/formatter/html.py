@@ -115,6 +115,26 @@ class HtmlFormatter:
 
         all_day_events = [e for events in day_events_by_organizer.values() for e in events]
 
+        categories_with_events = {}
+        sources_with_events = {}
+
+        for event in all_day_events:
+            flags = self._extract_flags(event)
+            event.flags = flags
+
+            for flag in flags:
+                if flag.startswith("source:"):
+                    sources_with_events[flag[7:]] = sources_with_events.get(flag[7:], 0) + 1
+                elif flag.startswith("category:"):
+                    categories_with_events[flag[9:]] = categories_with_events.get(flag[9:], 0) + 1
+
+        if not sources_with_events:
+            sources_with_events["Altres"] = 0
+        if not categories_with_events:
+            categories_with_events["Altres"] = 0
+
+        all_day_events = [e for events in day_events_by_organizer.values() for e in events]
+
         today = datetime.now().date()
         next_month = today.replace(day=28) + timedelta(days=4)
         next_month = next_month.replace(day=1)
@@ -132,37 +152,20 @@ class HtmlFormatter:
         categories_with_events = {}
         sources_with_events = {}
 
-        known_sources = {
-            "cccb",
-            "ateneu barcelonès",
-            "biblioteques barcelona",
-            "guia barcelona",
-        }
-
         for event in all_day_events:
-            event_tags = event.tags or []
+            flags = self._extract_flags(event)
+            event.flags = flags
 
-            for tag in event_tags:
-                if not tag:
-                    continue
-
-                tag_lower = tag.lower()
-
-                if tag_lower in known_sources:
-                    if tag not in sources_with_events:
-                        sources_with_events[tag] = 0
-                    sources_with_events[tag] += 1
-                else:
-                    if tag not in categories_with_events:
-                        categories_with_events[tag] = 0
-                    categories_with_events[tag] += 1
+            for flag in flags:
+                if flag.startswith("source:"):
+                    sources_with_events[flag[7:]] = sources_with_events.get(flag[7:], 0) + 1
+                elif flag.startswith("category:"):
+                    categories_with_events[flag[9:]] = categories_with_events.get(flag[9:], 0) + 1
 
         if not sources_with_events:
             sources_with_events["Altres"] = 0
         if not categories_with_events:
             categories_with_events["Altres"] = 0
-
-        html_parts.append("<div class='container'>")
 
         if categories_with_events or sources_with_events:
             html_parts.append("<aside class='sidebar'>")
@@ -244,6 +247,7 @@ class HtmlFormatter:
                     events_by_date_json[day_str] = []
                 event_cat = getattr(event, "event_category", "altres")
                 category_color = get_category_color(event_cat)
+                event_flags = getattr(event, "flags", [])
                 events_by_date_json[day_str].append(
                     {
                         "title": event.title,
@@ -254,7 +258,7 @@ class HtmlFormatter:
                         "location": event.location,
                         "category": event_cat,
                         "color": category_color,
-                        "tags": event.tags,
+                        "flags": event_flags,
                     }
                 )
 
@@ -296,22 +300,22 @@ class HtmlFormatter:
         )
         html_parts.append("  const selectedCategories = Array.from(categoryCheckboxes)")
         html_parts.append("    .filter(cb => cb.checked)")
-        html_parts.append("    .map(cb => cb.value);")
+        html_parts.append("    .map(cb => 'category:' + cb.value);")
         html_parts.append("  const sourceCheckboxes = document.querySelectorAll('.source-filter');")
         html_parts.append("  const selectedSources = Array.from(sourceCheckboxes)")
         html_parts.append("    .filter(cb => cb.checked)")
-        html_parts.append("    .map(cb => cb.value);")
+        html_parts.append("    .map(cb => 'source:' + cb.value);")
         html_parts.append("  ")
         html_parts.append("  document.querySelectorAll('.calendar-day').forEach(dayEl => {")
         html_parts.append("    const dayStr = dayEl.dataset.day;")
         html_parts.append("    const events = (window.allDayEvents || {})[dayStr] || [];")
         html_parts.append("    const visibleEvents = events.filter(e => {")
-        html_parts.append("      const eventTags = e.tags || [];")
+        html_parts.append("      const eventFlags = e.flags || [];")
         html_parts.append(
-            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.some(cat => eventTags.includes(cat));"
+            "      const categoryMatch = selectedCategories.length === 0 || selectedCategories.some(f => eventFlags.includes(f));"
         )
         html_parts.append(
-            "      const sourceMatch = selectedSources.length === 0 || selectedSources.some(src => eventTags.includes(src));"
+            "      const sourceMatch = selectedSources.length === 0 || selectedSources.some(f => eventFlags.includes(f));"
         )
         html_parts.append("      return categoryMatch && sourceMatch;")
         html_parts.append("    });")
@@ -374,19 +378,19 @@ class HtmlFormatter:
             "  const selectedCategories = Array.from(document.querySelectorAll('.category-filter'))"
         )
         html_parts.append("    .filter(cb => cb.checked)")
-        html_parts.append("    .map(cb => cb.value);")
+        html_parts.append("    .map(cb => 'category:' + cb.value);")
         html_parts.append(
             "  const selectedSources = Array.from(document.querySelectorAll('.source-filter'))"
         )
         html_parts.append("    .filter(cb => cb.checked)")
-        html_parts.append("    .map(cb => cb.value);")
+        html_parts.append("    .map(cb => 'source:' + cb.value);")
         html_parts.append("  const visibleEvents = events.filter(e => {")
-        html_parts.append("    const eventTags = e.tags || [];")
+        html_parts.append("    const eventFlags = e.flags || [];")
         html_parts.append(
-            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.some(cat => eventTags.includes(cat));"
+            "    const categoryMatch = selectedCategories.length === 0 || selectedCategories.some(f => eventFlags.includes(f));"
         )
         html_parts.append(
-            "    const sourceMatch = selectedSources.length === 0 || selectedSources.some(src => eventTags.includes(src));"
+            "    const sourceMatch = selectedSources.length === 0 || selectedSources.some(f => eventFlags.includes(f));"
         )
         html_parts.append("    return categoryMatch && sourceMatch;")
         html_parts.append("  });")
@@ -712,3 +716,23 @@ class HtmlFormatter:
                 pass
 
         return dates
+
+    def _extract_flags(self, event) -> list[str]:
+        KNOWN_SOURCES = {"cccb", "ateneu barcelonès", "biblioteques barcelona", "guia barcelona"}
+
+        flags = []
+        tags = event.tags or []
+
+        for tag in tags:
+            if not tag:
+                continue
+            tag_lower = tag.lower()
+            if tag_lower in KNOWN_SOURCES:
+                flags.append(f"source:{tag}")
+            else:
+                flags.append(f"category:{tag}")
+
+        if not flags:
+            flags = ["category:Altres"]
+
+        return flags
