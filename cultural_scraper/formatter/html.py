@@ -721,16 +721,22 @@ class HtmlFormatter:
         KNOWN_SOURCES = {"cccb", "ateneu barcelonès", "biblioteques barcelona", "guia barcelona"}
 
         flags = []
-        tags = event.tags or []
 
+        if event.event_category:
+            flags.append(f"category:{event.event_category}")
+
+        tags = event.tags or []
         for tag in tags:
             if not tag:
                 continue
             tag_lower = tag.lower()
+            flag = None
             if tag_lower in KNOWN_SOURCES:
-                flags.append(f"source:{tag}")
-            else:
-                flags.append(f"category:{tag}")
+                flag = f"source:{tag}"
+            elif tag_lower not in {f.split(":")[1] for f in flags if f.startswith("category:")}:
+                flag = f"category:{tag}"
+            if flag and flag not in flags:
+                flags.append(flag)
 
         if not flags:
             flags = ["category:Altres"]
