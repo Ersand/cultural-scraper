@@ -16,14 +16,6 @@ CATEGORY_COLORS = {
     "infantil": "#4caf50",
     "fires": "#ff5722",
     "gastronomia": "#795548",
-    "art": "#e67e22",
-    "família": "#27ae60",
-    "cursos i tallers": "#8e44ad",
-    "audiovisuals": "#2980b9",
-    "accessible": "#16a085",
-    "educació": "#d35400",
-    "itineraris": "#2c3e50",
-    "debat": "#7f8c8d",
     "altres": "#95a5a6",
 }
 
@@ -41,7 +33,11 @@ DEFAULT_COLOR = "#6c757d"
 
 
 def get_category_color(category: str) -> str:
-    return CATEGORY_COLORS.get(category.lower(), DEFAULT_COLOR)
+    cat_lower = category.lower()
+    for key, color in CATEGORY_COLORS.items():
+        if key.lower() == cat_lower:
+            return color
+    return DEFAULT_COLOR
 
 
 def get_source_color(source: str) -> str:
@@ -718,27 +714,55 @@ class HtmlFormatter:
         return dates
 
     def _extract_flags(self, event) -> list[str]:
-        KNOWN_SOURCES = {"cccb", "ateneu barcelonès", "biblioteques barcelona", "guia barcelona"}
+        KNOWN_CATEGORIES = {
+            "teatre",
+            "música",
+            "cinema",
+            "balls",
+            "xerrades",
+            "exposicions",
+            "literatura",
+            "infantil",
+            "fires",
+            "gastronomia",
+            "cursos i tallers",
+            "debats",
+            "audiovisuals",
+            "accessible",
+            "educació",
+            "itineraris",
+            "altres",
+            "escena",
+        }
+        KNOWN_SOURCES = {
+            "cccb",
+            "ateneu barcelonès",
+            "biblioteques barcelona",
+            "guia barcelona",
+            "biblioteques",
+            "ateneu",
+        }
 
         flags = []
 
         if event.event_category:
             flags.append(f"category:{event.event_category}")
+        else:
+            flags.append("category:Altres")
+
+        if event.source:
+            source_lower = event.source.lower().strip()
+            if source_lower not in KNOWN_CATEGORIES:
+                flags.append(f"source:{event.source}")
 
         tags = event.tags or []
         for tag in tags:
             if not tag:
                 continue
             tag_lower = tag.lower()
-            flag = None
-            if tag_lower in KNOWN_SOURCES:
-                flag = f"source:{tag}"
-            elif tag_lower not in {f.split(":")[1] for f in flags if f.startswith("category:")}:
-                flag = f"category:{tag}"
-            if flag and flag not in flags:
-                flags.append(flag)
-
-        if not flags:
-            flags = ["category:Altres"]
+            if tag_lower in KNOWN_CATEGORIES and tag_lower not in {f.split(":")[1] for f in flags}:
+                flags.append(f"category:{tag}")
+            elif tag_lower in KNOWN_SOURCES and f"source:{tag}" not in flags:
+                flags.append(f"source:{tag}")
 
         return flags

@@ -66,14 +66,56 @@ class EventFilter:
                 filtered.append(event)
         return filtered
 
-    GENERIC_CATEGORIES = {"agenda", "que fer", "altres", "otros", "other", "general"}
+    GENERIC_CATEGORIES = {
+        "agenda",
+        "que fer",
+        "altres",
+        "otros",
+        "other",
+        "general",
+        "sala_ateneu",
+        "accessible",
+        "escena",
+        "educació",
+        "exposició",
+        "itineraris",
+        "cursos i tallers",
+        "audiovisuals",
+        "debats",
+        "marina port vell",
+        "teatre lliure",
+        "palau de la música catalana",
+        "palau sant jordi",
+        "teatre nacional de catalunya",
+        "disseny hub barcelona",
+        "espai francesca bonnemaison",
+        "biblioteca francesca bonnemaison",
+        "la virreina",
+        "casa batlló",
+        "razzmatazz",
+        "jamboree",
+        "centre cívic",
+        "fundació joan miró",
+        "amics cccb",
+        "biblioteques barcelona",
+        "guia barcelona",
+        "ateneu barcelonès",
+        "virreina",
+        "recorregut",
+        "biblioteca francesc",
+        "cccb",
+        "ateneu",
+        "biblioteques",
+    }
+
+    GENERIC_CATEGORY_PARTIALS = [
+        "virreina",
+        "recorregut",
+        "biblioteca francesc",
+        "espai francesca",
+    ]
 
     def classify_category(self, event: Event) -> str:
-        if event.tags:
-            for tag in event.tags:
-                if tag and tag.lower() not in self.GENERIC_CATEGORIES:
-                    return tag.lower()
-
         fields = [
             str(event.title) if event.title else "",
             str(event.description) if event.description else "",
@@ -82,11 +124,31 @@ class EventFilter:
         text_to_check = " ".join(fields).lower()
 
         category_keywords = self.config.category_keywords or {}
+        best_match = None
+        best_score = 0
 
         for cat_name, keywords in category_keywords.items():
+            score = 0
             for kw in keywords:
                 if kw.lower() in text_to_check:
-                    return cat_name
+                    score += len(kw)
+            if score > best_score:
+                best_score = score
+                best_match = cat_name
+
+        if best_match:
+            return best_match
+
+        if event.tags:
+            for tag in event.tags:
+                if not tag:
+                    continue
+                tag_lower = tag.lower()
+                if tag_lower in self.GENERIC_CATEGORIES:
+                    continue
+                if any(p in tag_lower for p in self.GENERIC_CATEGORY_PARTIALS):
+                    continue
+                return tag_lower
 
         fallback = event.source.lower().strip() if event.source else "altres"
         if fallback in self.GENERIC_CATEGORIES or not fallback:
