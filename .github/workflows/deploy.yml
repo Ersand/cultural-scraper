@@ -29,8 +29,10 @@ jobs:
       - name: Scrape events
         run: cultural-scraper scrape -c cultural_scraper/config/config.yaml
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+      - name: Commit docs to master
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "chore: update docs $(date +%Y-%m-%d)"
+          git push origin HEAD:master
