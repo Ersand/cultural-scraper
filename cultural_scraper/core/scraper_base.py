@@ -2,11 +2,11 @@ from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from typing import Any, Optional, TYPE_CHECKING
 import logging
+import requests
+from bs4 import BeautifulSoup
 
 if TYPE_CHECKING:
-    from scraper.manager import ScraperManager
-
-logger = logging.getLogger(__name__)
+    from cultural_scraper.data.manager import ScraperManager
 
 
 @dataclass
@@ -41,3 +41,37 @@ class BaseScraper(ABC):
 
     def get_user_agent(self) -> str:
         return self.config.get("user_agent", "CulturalScraper/1.0")
+
+    def fetch_soup(self, url: str) -> Optional[BeautifulSoup]:
+        """Fetch URL and return BeautifulSoup. Uses manager session if available."""
+        if self.manager:
+            return self.manager.fetch_page(url)
+
+        session = requests.Session()
+        session.headers.update({"User-Agent": self.get_user_agent()})
+        retry_count = self.config.get("retry_count", 3)
+
+        for attempt in range(retry_count):
+            try:
+                response = session.get(url, timeout=self.get_timeout())
+                response.raise_for_status()
+                return BeautifulSoup(response.content, "lxml")
+            except Exception as e:
+                self.logger.warning(f"Attempt {attempt + 1} failed for {url}: {e}")
+                if attempt == retry_count - 1:
+                    self.logger.error(f"Failed to fetch {url} after {retry_count} attempts")
+                    return None
+        return None
+
+    def fetch_json(self, url: str) -> Optional[Any]:
+        """Fetch URL and return parsed JSON."""
+        session = requests.Session()
+        session.headers.update({"User-Agent": self.get_user_agent()})
+
+        try:
+            response = session.get(url, timeout=self.get_timeout())
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            self.logger.error(f"Failed to fetch JSON from {url}: {e}")
+            return None

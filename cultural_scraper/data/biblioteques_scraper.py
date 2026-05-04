@@ -2,13 +2,10 @@ from cultural_scraper.core import BaseScraper, Event
 
 
 class BibliotequesScraper(BaseScraper):
-    """
-    Scraper for Barcelona Libraries
-    Website: https://ajuntament.barcelona.cat/biblioteques/ca/activitats/
-    """
+    """Scraper for Barcelona Libraries."""
 
     def scrape(self) -> list[Event]:
-        soup = self.manager.fetch_page(self.url)
+        soup = self.fetch_soup(self.url)
         if not soup:
             return []
 
@@ -45,18 +42,17 @@ class BibliotequesScraper(BaseScraper):
                     else:
                         location = address
 
-                event = Event(
-                    title=title,
-                    date=date,
-                    location=location,
-                    url=event_url,
-                    source=self.name,
-                    organizer="Biblioteques de Barcelona",
+                events.append(
+                    Event(
+                        title=title,
+                        date=date,
+                        location=location,
+                        url=event_url,
+                        source=self.name,
+                        organizer="Biblioteques de Barcelona",
+                    )
                 )
-                events.append(event)
-
             except Exception as e:
                 self.logger.warning(f"Error parsing Biblioteques event: {e}")
-                continue
 
         return events

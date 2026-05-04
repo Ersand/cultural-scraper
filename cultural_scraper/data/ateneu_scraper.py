@@ -1,33 +1,11 @@
-import requests
-import re
 from datetime import datetime
 from typing import Any, Optional
 from cultural_scraper.core import BaseScraper, Event
-
-
-CATALAN_MONTHS: dict[str, int] = {
-    "gener": 1,
-    "febrer": 2,
-    "març": 3,
-    "abril": 4,
-    "maig": 5,
-    "juny": 6,
-    "juliol": 7,
-    "agost": 8,
-    "setembre": 9,
-    "octubre": 10,
-    "novembre": 11,
-    "desembre": 12,
-}
+from cultural_scraper.utils import CATALAN_MONTHS, strip_html
 
 
 class AteneuScraper(BaseScraper):
-    """
-    Scraper for Ateneu Barcelonès
-    Website: https://ateneubcn.cat/
-
-    Uses WordPress REST API to fetch events.
-    """
+    """Scraper for Ateneu Barcelonès. Uses WordPress REST API."""
 
     def __init__(self, name: str, url: str, config: dict[str, Any] | None = None) -> None:
         super().__init__(name, url, config)
@@ -38,95 +16,76 @@ class AteneuScraper(BaseScraper):
             return self.location_cache
 
         self.location_cache = {}
-        try:
-            response = requests.get(
-                "https://ateneubcn.cat/wp-json/wp/v2/espais",
-                headers={"User-Agent": self.get_user_agent()},
-                timeout=self.get_timeout(),
-            )
-            if response.status_code == 200:
-                for item in response.json():
-                    loc_id = item.get("id")
-                    title = item.get("title", {}).get("rendered", "")
-                    title = self._strip_html(title)
+        api_url = self._build_api_url("espais")
+        data = self.fetch_json(api_url)
+        if data:
+            for item in data:
+                loc_id = item.get("id")
+                title = strip_html(item.get("title", {}).get("rendered", ""))
+                if loc_id and title:
                     self.location_cache[str(loc_id)] = title
-        except Exception as e:
-            self.logger.warning(f"Could not fetch locations: {e}")
 
         return self.location_cache
 
+    def _build_api_url(self, endpoint: str) -> str:
+        base = (
+            self.url.replace("/activitats/", "")
+            if "/activitats/" in self.url
+            else "https://ateneubcn.cat"
+        )
+        return f"{base}/wp-json/wp/v2/{endpoint}?per_page=50"
+
     def scrape(self) -> list[Event]:
-        events = []
-
-        base_url = self.url
-        if "/activitats/" in base_url:
-            api_url = base_url.split("/activitats/")[0] + "/wp-json/wp/v2/activitats?per_page=50"
-        else:
-            api_url = "https://ateneubcn.cat/wp-json/wp/v2/activitats?per_page=50"
-
         locations = self._get_locations()
-
-        try:
-            response = requests.get(
-                api_url,
-                headers={"User-Agent": self.get_user_agent()},
-                timeout=self.get_timeout(),
-            )
-            response.raise_for_status()
-            data = response.json()
-        except Exception as e:
-            self.logger.error(f"API error: {e}")
+        data = self.fetch_json(self._build_api_url("activitats"))
+        if not data:
             return []
 
+        events = []
         for item in data:
             try:
-                title = item.get("title", {}).get("rendered", "")
-                if not title:
-                    continue
-
-                title = self._strip_html(title)
-                link = item.get("link", "")
-
-                acf = item.get("acf", {})
-                campos = acf.get("campos_activitat", {})
-
-                date_inici = campos.get("data_inici", "")
-                date, time = self._parse_date_time(date_inici)
-
-                location_id = str(campos.get("localitzacio", ""))
-                location = locations.get(location_id, "")
-                address = campos.get("adressa", "")
-                if address and location:
-                    location = f"{location} - {address}"
-                elif address:
-                    location = address
-
-                category = campos.get("tipus_de_localitzacio", "")
-                if not category:
-                    category = None
-
-                price_socis = campos.get("preu_socis", "")
-                price_no_socis = campos.get("preu_no_socis", "")
-                price = self._format_price(price_socis, price_no_socis)
-
-                event = Event(
-                    title=title,
-                    date=date,
-                    time=time,
-                    location=location if location else None,
-                    price=price,
-                    url=link,
-                    source=self.name,
-                    organizer="Ateneu Barcelonès",
-                    tags=[category, "Ateneu Barcelonès"] if category else ["Ateneu Barcelonès"],
-                )
-                events.append(event)
-
+                event = self._parse_item(item, locations)
+                if event:
+                    events.append(event)
             except Exception as e:
                 self.logger.warning(f"Error parsing Ateneu event: {e}")
-                continue
 
         return events
+
+    def _parse_item(self, item: dict, locations: dict[str, str]) -> Optional[Event]:
+        title = strip_html(item.get("title", {}).get("rendered", ""))
+        if not title:
+            return None
+
+        link = item.get("link", "")
+        acf = item.get("acf", {})
+        campos = acf.get("campos_activitat", {})
+
+        date_inici = campos.get("data_inici", "")
+        date, time = self._parse_date_time(date_inici)
+
+        location_id = str(campos.get("localitzacio", ""))
+        location = locations.get(location_id, "")
+        address = campos.get("adressa", "")
+        if address and location:
+            location = f"{location} - {address}"
+        elif address:
+            location = address
+
+        category = campos.get("tipus_de_localitzacio") or None
+        price = self._format_price(campos.get("preu_socis", ""), campos.get("preu_no_socis", ""))
+
+        return Event(
+            title=title,
+            date=date,
+            time=time,
+            location=location if location else None,
+            price=price,
+            url=link,
+            source=self.name,
+            organizer="Ateneu Barcelonès",
+            tags=[category, "Ateneu Barcelonès"] if category else ["Ateneu Barcelonès"],
+        )
 
     def _parse_date_time(self, date_inici: str) -> tuple[Optional[str], Optional[str]]:
         if not date_inici:
@@ -134,9 +93,7 @@ class AteneuScraper(BaseScraper):
 
         try:
             dt = datetime.strptime(date_inici, "%Y-%m-%d %H:%M:%S")
-            date = dt.strftime("%d/%m/%Y")
-            time = dt.strftime("%H:%M")
-            return date, time
+            return dt.strftime("%d/%m/%Y"), dt.strftime("%H:%M")
         except ValueError:
             pass
 
@@ -146,11 +103,9 @@ class AteneuScraper(BaseScraper):
                 day = int(parts[0])
                 month_name = parts[1].lower()
                 year = parts[2] if len(parts) > 2 else str(datetime.now().year)
-
                 month = CATALAN_MONTHS.get(month_name)
                 if month:
-                    date = f"{day:02d}/{month:02d}/{year}"
-                    return date, None
+                    return f"{day:02d}/{month:02d}/{year}", None
             except (ValueError, IndexError):
                 pass
 
@@ -164,7 +119,3 @@ class AteneuScraper(BaseScraper):
         elif price_socis:
             return f"Socis: {price_socis}€"
         return None
-
-    def _strip_html(self, html_string: str) -> str:
-        clean = re.sub(r"<[^>]+>", "", html_string)
-        return clean.strip()

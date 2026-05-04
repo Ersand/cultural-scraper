@@ -1,78 +1,50 @@
-from datetime import datetime
-import re
 from typing import Any, Optional
 from cultural_scraper.core import BaseScraper, Event
-
-
-CATALAN_MONTHS: dict[str, int] = {
-    "gener": 1,
-    "febrer": 2,
-    "març": 3,
-    "abril": 4,
-    "maig": 5,
-    "juny": 6,
-    "juliol": 7,
-    "agost": 8,
-    "setembre": 9,
-    "octubre": 10,
-    "novembre": 11,
-    "desembre": 12,
-}
+from cultural_scraper.utils import CATALAN_MONTHS, parse_time
 
 
 class CCCBScraper(BaseScraper):
-    """
-    Scraper for CCCB (Centre de Cultura Contemporània de Barcelona)
-    Website: https://www.cccb.org/ca/
-    """
+    """Scraper for CCCB (Centre de Cultura Contemporània de Barcelona)."""
 
     def scrape(self) -> list[Event]:
-        soup = self.manager.fetch_page(self.url)
+        soup = self.fetch_soup(self.url)
         if not soup:
             return []
 
         events = []
 
-        month_sections = soup.select(".mp-component-agenda-list")
-
-        for month_section in month_sections:
+        for month_section in soup.select(".mp-component-agenda-list"):
             month_header = month_section.select_one("h2, h3")
             month_text = month_header.get_text(strip=True) if month_header else ""
-            month_str, year = self._parse_month(month_text)
-
-            if not month_str or not year:
+            month_num, year = self._parse_month(month_text)
+            if not month_num or not year:
                 continue
 
-            date_rows = month_section.select(".agenda-card-row")
-
-            for date_row in date_rows:
+            for date_row in month_section.select(".agenda-card-row"):
                 day_elem = date_row.select_one(".agenda-card-date-num")
-                day: int | None = int(day_elem.get_text(strip=True)) if day_elem else None
+                day = int(day_elem.get_text(strip=True)) if day_elem else None
+                if day is None:
+                    continue
 
-                cards = date_row.select(".agenda-card-item")
-                for card in cards:
-                    if day is None:
-                        continue
+                for card in date_row.select(".agenda-card-item"):
                     try:
-                        event = self._parse_card(card, day, month_str, year)
+                        event = self._parse_card(card, day, month_num, year)
                         if event:
                             events.append(event)
                     except Exception as e:
                         self.logger.warning(f"Error parsing CCCB event: {e}")
-                        continue
 
         return events
 
-    def _parse_month(self, month_text: str) -> tuple:
-        """Parse month text like 'març 2026' to (3, 2026)"""
+    def _parse_month(self, month_text: str) -> tuple[Optional[int], Optional[int]]:
         parts = month_text.lower().strip().split()
         if len(parts) >= 2:
-            month_name = parts[0]
-            year_str = parts[1]
-
+            month_name, year_str = parts[0], parts[1]
             try:
                 year = int(year_str)
             except ValueError:
+                from datetime import datetime
+
                 year = datetime.now().year
 
             month_num = CATALAN_MONTHS.get(month_name)
@@ -97,7 +69,6 @@ class CCCBScraper(BaseScraper):
 
         time_elem = card.select_one(".agenda-card-date-time")
         raw_time = time_elem.get_text(strip=True) if time_elem else None
-
         time_value, location = self._parse_time_and_location(raw_time)
 
         category_elem = card.select_one(".agenda-card-pretitle span")
@@ -116,8 +87,6 @@ class CCCBScraper(BaseScraper):
         description_elem = card.select_one(".agenda-card-text")
         description = description_elem.get_text(strip=True) if description_elem else None
 
-        event_category = category if category else None
-
         return Event(
             title=title,
             date=date_str,
@@ -127,26 +96,24 @@ class CCCBScraper(BaseScraper):
             url=event_url,
             source=self.name,
             organizer="CCCB",
-            tags=[event_category, "CCCB"] if event_category else ["CCCB"],
+            tags=[category, "CCCB"] if category else ["CCCB"],
         )
 
-    def _parse_time_and_location(self, raw: str | None) -> tuple:
-        """Parse raw time string to extract time and determine if it's actually a date."""
+    def _parse_time_and_location(self, raw: Optional[str]) -> tuple[Optional[str], Optional[str]]:
         if not raw:
             return None, None
 
-        time_pattern = re.compile(r"(\d{1,2}:\d{2})")
-        match = time_pattern.search(raw)
-
-        if match:
-            time_value = match.group(1)
-            return time_value, None
+        time_value = parse_time(raw)
+        if time_value:
+            return f"{time_value[0]:02d}:{time_value[1]:02d}", None
 
         date_patterns = [
             r"\d{1,2}\s+d['′]?\w+\s+\d{4}",
             r"\d{1,2}\s+de\s+\w+\s+\d{4}",
         ]
         for pattern in date_patterns:
+            import re
+
             if re.search(pattern, raw, re.IGNORECASE):
                 return None, None
 
