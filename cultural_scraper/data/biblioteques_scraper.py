@@ -47,7 +47,7 @@ class BibliotequesScraper(BaseScraper):
                         title=title,
                         date=date,
                         location=location,
-                        url=event_url,
+                        url=event_url if isinstance(event_url, str) else None,
                         source=self.name,
                         organizer="Biblioteques de Barcelona",
                     )

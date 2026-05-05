@@ -172,7 +172,7 @@ class HtmlFormatter:
         next_month = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
         following = (next_month + timedelta(days=32)).replace(day=1)
 
-        return [e for e in events if any(today <= d < following for d in parse_date_range(e.date))]
+        return [e for e in events if e.date and any(today <= d < following for d in parse_date_range(e.date))]
 
     def _attach_flags(self, events: list[Event]) -> None:
         for event in events:
@@ -285,8 +285,9 @@ class HtmlFormatter:
     def _generate_calendar(self, events: list[Event]) -> str:
         events_by_date: dict[date_type, list[Event]] = {}
         for event in events:
-            for d in parse_date_range(event.date):
-                events_by_date.setdefault(d, []).append(event)
+            if event.date:
+                for d in parse_date_range(event.date):
+                    events_by_date.setdefault(d, []).append(event)
 
         today = datetime.now().date()
         current = datetime(today.year, today.month, 1)
@@ -362,8 +363,9 @@ class HtmlFormatter:
     def _render_data_scripts(self, events: list[Event]) -> list[str]:
         by_date: dict[str, list[dict[str, Any]]] = {}
         for event in events:
-            for d in parse_date_range(event.date):
-                day_str = d.strftime("%Y-%m-%d")
+            if event.date:
+                for d in parse_date_range(event.date):
+                    day_str = d.strftime("%Y-%m-%d")
                 cat = getattr(event, "event_category", "altres") or "altres"
                 by_date.setdefault(day_str, []).append(
                     {
