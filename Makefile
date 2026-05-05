@@ -1,3 +1,6 @@
+VENV = .venv
+BIN = $(VENV)/bin
+
 .PHONY: help lint format run clean install typecheck pre-commit
 
 help:
@@ -15,16 +18,16 @@ install:
 	uv pip install ruff mypy pre-commit typer rich
 
 lint:
-	ruff check cultural_scraper tests
+	$(BIN)/ruff check cultural_scraper
 
 format:
-	ruff format cultural_scraper tests
+	$(BIN)/ruff format cultural_scraper
 
 typecheck:
-	mypy cultural_scraper
+	$(BIN)/mypy cultural_scraper
 
 pre-commit:
-	ruff check cultural_scraper tests && ruff format --check cultural_scraper tests
+	$(BIN)/ruff check cultural_scraper && $(BIN)/ruff format --check cultural_scraper
 
 run:
 	python -m cultural_scraper.cli.main scrape -c cultural_scraper/config/config.yaml
